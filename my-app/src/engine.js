@@ -1,73 +1,73 @@
 const startBattle = (army1, army2, army3) => {
-  let activeUnits1 = [...army1];
-  let activeUnits2 = [...army2];
-  let activeUnits3 = [...army3];
+  const armies = [army1, army2, army3];
+  const armyNames = ["Army1", "Army2", "Army3"];
 
-  while (
-    activeUnits1.length > 0 &&
-    activeUnits2.length > 0 &&
-    activeUnits3.length > 0
-  ) {
-    activeUnits1.sort((a, b) => b.speed - a.speed);
-    activeUnits2.sort((a, b) => b.speed - a.speed);
-    activeUnits3.sort((a, b) => b.speed - a.speed);
+  while (armies.filter((army) => army.length > 0).length > 1) {
+    for (let i = 0; i < armies.length; i++) {
+      const currentArmy = armies[i];
+      const otherArmies = armies.filter((_, index) => index !== i);
 
-    if (activeUnits1.length > 0) {
-      const unit1 = activeUnits1[0];
-      const targetArmy = [activeUnits2, activeUnits3].find(
-        (army) => army.length > 0
-      );
-      if (targetArmy) {
-        const targetUnit = targetArmy[0];
-        targetUnit.health -= unit1.attack - targetUnit.defense;
-        if (targetUnit.health <= 0) {
-          targetArmy.shift();
+      for (let j = 0; j < currentArmy.length; j++) {
+        const unit = currentArmy[j];
+        let targetUnit = null;
+        for (let k = 0; k < otherArmies.length; k++) {
+          const otherArmy = otherArmies[k];
+          if (otherArmy.length > 0) {
+            const target = otherArmy.reduce((prev, curr) => {
+              return curr.speed > prev.speed ? curr : prev;
+            });
+            if (!targetUnit || target.speed > targetUnit.speed) {
+              targetUnit = target;
+            }
+          }
         }
+
+        if (targetUnit) {
+          // Attack the target unit
+          const damage = unit.attackOtherUnit(targetUnit);
+          console.log(
+            `${unit.name} from ${armyNames[i]} attacked ${
+              targetUnit.name
+            } from ${
+              armyNames[armies.indexOf(targetUnit)]
+            } and inflicted ${damage} damage.`
+          );
+
+          // Check if the target unit is defeated
+          if (targetUnit.health <= 0) {
+            const targetArmyIndex = armies.findIndex((army) =>
+              army.includes(targetUnit)
+            );
+            const targetArmyName = armyNames[targetArmyIndex];
+            console.log(
+              `${targetUnit.name} from ${targetArmyName} has been defeated!`
+            );
+            const targetIndex =
+              otherArmies[targetArmyIndex].indexOf(targetUnit);
+            otherArmies[targetArmyIndex].splice(targetIndex, 1);
+          }
+        }
+
+        // Apply cooldown/wait time for the unit
+        unit.cooldown = 1;
       }
-      activeUnits1.push(activeUnits1.shift());
     }
 
-    if (activeUnits2.length > 0) {
-      const unit2 = activeUnits2[0];
-      const targetArmy = [activeUnits1, activeUnits3].find(
-        (army) => army.length > 0
-      );
-      if (targetArmy) {
-        const targetUnit = targetArmy[0];
-        targetUnit.health -= unit2.attack - targetUnit.defense;
-        if (targetUnit.health <= 0) {
-          targetArmy.shift();
+    // Reduce cooldown for all units
+    for (const army of armies) {
+      for (const unit of army) {
+        if (unit.cooldown > 0) {
+          unit.cooldown--;
         }
       }
-      activeUnits2.push(activeUnits2.shift());
-    }
-
-    if (activeUnits3.length > 0) {
-      const unit3 = activeUnits3[0];
-      const targetArmy = [activeUnits1, activeUnits2].find(
-        (army) => army.length > 0
-      );
-      if (targetArmy) {
-        const targetUnit = targetArmy[0];
-        targetUnit.health -= unit3.attack - targetUnit.defense;
-        if (targetUnit.health <= 0) {
-          targetArmy.shift();
-        }
-      }
-      activeUnits3.push(activeUnits3.shift());
     }
   }
 
-  if (activeUnits1.length > 0) {
-    return army1;
-  } else if (activeUnits2.length > 0) {
-    return army2;
-  } else if (activeUnits3.length > 0) {
-    return army3;
-  } else {
-    console.log("draw");
-    return null;
-  }
+  // Determine the winner
+  const winnerArmy = armies.find((army) => army.length > 0);
+  const winnerName = armyNames[armies.indexOf(winnerArmy)];
+  console.log(`The winner is ${winnerName}!`);
+  return winnerArmy;
 };
 
 export default startBattle;
