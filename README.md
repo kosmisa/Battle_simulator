@@ -1,4 +1,4 @@
-Parctice of testin app with JEST
+Practice of testing app with JEST
 
 War Simulation Game with Detailed Battle Mechanics using React
 
