@@ -1,3 +1,5 @@
+Parctice of testin app with JEST
+
 War Simulation Game with Detailed Battle Mechanics using React
 
 Description:
